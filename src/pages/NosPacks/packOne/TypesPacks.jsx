@@ -1,9 +1,21 @@
-
 import { useState } from 'react';
-import { Check, Box, Rocket, ShoppingCart, ArrowRight, Monitor, Palette, Video } from 'lucide-react';
+import { Check, ArrowRight, Monitor, Palette, Video } from 'lucide-react';
 
 export default function PricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
+
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service: 'packs basic',
+      package: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
@@ -23,7 +35,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Site Vitrine"
-          price="5 000"
+          price="5000"
           description="Donnez vie à votre présence en ligne avec un site élégant et performant."
           features={[
             "Jusqu'à 3 pages professionnelles",
@@ -38,6 +50,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('site-vitrine')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Site Vitrine', '5000')}
         />
 
         {/* Pack Identité Visuelle */}
@@ -61,6 +74,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('identite-visuelle')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Identité Visuelle', '900')}
         />
 
         {/* Pack Motion Design */}
@@ -69,7 +83,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Motion Design"
-          price="4 500"
+          price="4500"
           description="Communiquez efficacement avec une vidéo animée professionnelle."
           features={[
             "Vidéo animée jusqu'à 60 secondes",
@@ -83,6 +97,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('motion-design')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack Motion Design', '4500')}
         />
       </div>
 
@@ -107,6 +122,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -197,6 +213,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />

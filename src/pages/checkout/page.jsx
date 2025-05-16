@@ -1,9 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, Check, ArrowRight } from "lucide-react";
 
 export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit");
+  const [orderDetails, setOrderDetails] = useState({
+    service: "",
+    package: "",
+    price: "0"
+  });
+  const [total, setTotal] = useState({
+    subtotal: 0,
+    tax: 0,
+    total: 0
+  });
+  
+  // Get query parameters from URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const service = urlParams.get('service') || "design";
+    const packageName = urlParams.get('package') || "Pack Site Vitrine";
+    const price = urlParams.get('price') || "5000";
+    
+    // Parse price as number for calculations
+    const priceNumber = parseFloat(price);
+    const taxRate = 0.05; // 5% tax
+    const taxAmount = priceNumber * taxRate;
+    const totalAmount = priceNumber + taxAmount;
+    
+    setOrderDetails({
+      service: service,
+      package: packageName,
+      price: price
+    });
+    
+    setTotal({
+      subtotal: priceNumber,
+      tax: taxAmount,
+      total: totalAmount
+    });
+  }, []);
   
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -12,6 +48,11 @@ export default function CheckoutPage() {
       y: 0,
       transition: { duration: 0.5 }
     }
+  };
+
+  // Format number with comma as thousands separator
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   return (
@@ -33,8 +74,7 @@ export default function CheckoutPage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
           <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
-            A checkout page is the part of the website where you review your web development order and
-            proceed with the payment for the website you are purchasing.
+            Finalisez votre commande pour le service {orderDetails.service} que vous avez choisi.
           </p>
         </div>
 
@@ -75,7 +115,7 @@ export default function CheckoutPage() {
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Country</label>
-                <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" defaultValue="Maroc" />
               </div>
 
               <div>
@@ -121,49 +161,32 @@ export default function CheckoutPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <div>
-                  <p className="font-medium">Paris Starter</p>
-                  <p className="text-sm text-gray-500">Basic website with 5 pages</p>
-                </div>
-                <p className="font-medium">$1,499</p>
-              </div>
-
-              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <div>
-                  <p className="font-medium">Paris Gold</p>
-                  <p className="text-sm text-gray-500">Advanced website with CMS</p>
+                  <p className="font-medium">{orderDetails.package}</p>
+                  <p className="text-sm text-gray-500">Service: {orderDetails.service}</p>
                   <p className="text-sm text-gray-500">Qty: 1</p>
                 </div>
-                <p className="font-medium">$1,299</p>
-              </div>
-
-              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <div>
-                  <p className="font-medium">SEO Add-on</p>
-                  <p className="text-sm text-gray-500">Basic SEO optimization</p>
-                  <p className="text-sm text-gray-500">Qty: 1</p>
-                </div>
-                <p className="font-medium">$499</p>
+                <p className="font-medium">{formatPrice(orderDetails.price)} MAD</p>
               </div>
 
               <div className="flex justify-between items-center pt-2">
                 <p className="text-gray-600">Subtotal</p>
-                <p className="font-medium">$3,297</p>
+                <p className="font-medium">{formatPrice(total.subtotal)} MAD</p>
               </div>
 
               <div className="flex justify-between items-center">
                 <p className="text-gray-600">Tax (5%)</p>
-                <p className="font-medium">$165.76</p>
+                <p className="font-medium">{formatPrice(total.tax)} MAD</p>
               </div>
 
               <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                 <p className="font-bold text-lg">Total</p>
-                <p className="font-bold text-lg">$3,359.79</p>
+                <p className="font-bold text-lg">{formatPrice(total.total)} MAD</p>
               </div>
 
               <div className="mt-6">
                 <h3 className="font-medium mb-2">Estimated Delivery</h3>
                 <p className="text-sm text-gray-600">
-                  Your website will be ready within 2-3 weeks after order confirmation.
+                  Votre projet sera livré dans 2-3 semaines après confirmation de la commande.
                 </p>
               </div>
             </div>
@@ -212,7 +235,7 @@ export default function CheckoutPage() {
                 <div className="mt-8">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold">Grand Total:</h3>
-                    <p className="text-xl font-bold">$2,917.00</p>
+                    <p className="text-xl font-bold">{formatPrice(total.total)} MAD</p>
                   </div>
                   
                   <motion.button

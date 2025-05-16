@@ -40,7 +40,7 @@ export default function HeroSection() {
 
           <p className="text-gray-700 mb-8  text-center max-w-lg leading-relaxed">
           Gagnez en visibilité et en notoriété grâce à une stratégie social media efficace.
-          Nos packs de Community Management sont conçus pour engager votre audience et attirer des clients qualifiés.          </p>
+          Nos packs de Community Management sont conçus pour engager votre audience et attirer des clients qualifiés.</p>
 
           {/* Boutons */}
           <div className="flex flex-col sm:flex-row justify-center gap-4">

@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Check, ArrowRight } from "lucide-react";
+import {  Check,  AlertCircle } from "lucide-react";
+
+// Define animation variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6 }
+  }
+};
 
 export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit");
@@ -9,50 +19,115 @@ export default function CheckoutPage() {
     package: "",
     price: "0"
   });
-  const [total, setTotal] = useState({
-    subtotal: 0,
-    tax: 0,
-    total: 0
+  const [billingDetails, setBillingDetails] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+    company: "",
+    country: "Maroc",
+    city: "",
+    state: "",
+    street_address: "",
+    orderNote: ""
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderError, setOrderError] = useState(null);
+  
+  // Success message component
+  const SuccessMessage = () => (
+    <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-6">
+      <div className="flex items-center">
+        <Check className="text-green-500 mr-2" size={20} />
+        <p className="text-green-700 font-medium">Order placed successfully!</p>
+      </div>
+      <p className="text-green-600 mt-2 text-sm">Thank you for your order. We will contact you shortly.</p>
+    </div>
+  );
+
+  // Error message component
+  const ErrorMessage = ({ message }) => (
+    <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
+      <div className="flex items-center">
+        <AlertCircle className="text-red-500 mr-2" size={20} />
+        <p className="text-red-700 font-medium">Error</p>
+      </div>
+      <p className="text-red-600 mt-2 text-sm">{message}</p>
+    </div>
+  );
+
+  // Format number with comma as thousands separator
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
   
   // Get query parameters from URL on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const service = urlParams.get('service') || "design";
-    const packageName = urlParams.get('package') || "Pack Site Vitrine";
-    const price = urlParams.get('price') || "5000";
-    
-    // Parse price as number for calculations
-    const priceNumber = parseFloat(price);
-    const taxRate = 0.05; // 5% tax
-    const taxAmount = priceNumber * taxRate;
-    const totalAmount = priceNumber + taxAmount;
+    const service = urlParams.get('service') || "Website";
+    const packageName = urlParams.get('package') || "Pro";
+    const price = urlParams.get('price') || "149";
     
     setOrderDetails({
       service: service,
       package: packageName,
       price: price
     });
-    
-    setTotal({
-      subtotal: priceNumber,
-      tax: taxAmount,
-      total: totalAmount
-    });
   }, []);
-  
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5 }
-    }
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setBillingDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Format number with comma as thousands separator
-  const formatPrice = (price) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // Handle form submission
+  const handleSubmitOrder = async (e) => {
+    e.preventDefault();
+    
+    // Validate required fields
+    if (!billingDetails.firstname || !billingDetails.lastname || !billingDetails.email || !billingDetails.phone) {
+      setOrderError("Please fill in all required fields");
+      return;
+    }
+    
+    if (!termsAccepted) {
+      setOrderError("Please accept the terms and conditions");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setOrderError(null);
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/v1/orders?service_name=${orderDetails.service}&pack_name=${orderDetails.package}&price=${orderDetails.price}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(billingDetails)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to place order');
+      }
+      
+      setOrderSuccess(true);
+      // Reset form or redirect to success page
+      console.log('Order placed successfully:', data);
+    } catch (error) {
+      setOrderError(error.message);
+      console.error('Order submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,7 +153,7 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Billing Details */}
           <motion.div 
             variants={fadeIn}
@@ -94,54 +169,119 @@ export default function CheckoutPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">First Name</label>
-                  <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                  <label className="block text-sm text-gray-600 mb-1">First Name <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    name="firstname"
+                    value={billingDetails.firstname}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                    required
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Last Name</label>
-                  <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                  <label className="block text-sm text-gray-600 mb-1">Last Name <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    name="lastname"
+                    value={billingDetails.lastname}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                    required
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Company (Optional)</label>
-                <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                <input 
+                  type="text" 
+                  name="company"
+                  value={billingDetails.company}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Email</label>
-                <input type="email" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                <label className="block text-sm text-gray-600 mb-1">Email <span className="text-red-500">*</span></label>
+                <input 
+                  type="email" 
+                  name="email"
+                  value={billingDetails.email}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                  required
+                />
               </div>
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Country</label>
-                <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" defaultValue="Maroc" />
+                <input 
+                  type="text" 
+                  name="country"
+                  value={billingDetails.country}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                  defaultValue="Maroc" 
+                />
               </div>
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Street Address</label>
-                <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                <input 
+                  type="text" 
+                  name="street_address"
+                  value={billingDetails.street_address}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">City</label>
-                  <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                  <input 
+                    type="text" 
+                    name="city"
+                    value={billingDetails.city}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">State</label>
-                  <input type="text" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                  <input 
+                    type="text" 
+                    name="state"
+                    value={billingDetails.state}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Phone</label>
-                <input type="tel" className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" />
+                <label className="block text-sm text-gray-600 mb-1">Phone <span className="text-red-500">*</span></label>
+                <input 
+                  type="tel" 
+                  name="phone"
+                  value={billingDetails.phone}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50" 
+                  required
+                />
               </div>
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Order Notes (Optional)</label>
-                <textarea className="w-full p-2 border border-gray-200 rounded-md bg-gray-50 h-20" placeholder="Special notes for your order or delivery instructions"></textarea>
+                <textarea 
+                  name="orderNote"
+                  value={billingDetails.orderNote}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-200 rounded-md bg-gray-50 h-20" 
+                  placeholder="Special notes for your order or delivery instructions"
+                ></textarea>
               </div>
             </div>
           </motion.div>
@@ -168,19 +308,9 @@ export default function CheckoutPage() {
                 <p className="font-medium">{formatPrice(orderDetails.price)} MAD</p>
               </div>
 
-              <div className="flex justify-between items-center pt-2">
-                <p className="text-gray-600">Subtotal</p>
-                <p className="font-medium">{formatPrice(total.subtotal)} MAD</p>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">Tax (5%)</p>
-                <p className="font-medium">{formatPrice(total.tax)} MAD</p>
-              </div>
-
               <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                 <p className="font-bold text-lg">Total</p>
-                <p className="font-bold text-lg">{formatPrice(total.total)} MAD</p>
+                <p className="font-bold text-lg">{formatPrice(orderDetails.price)} MAD</p>
               </div>
 
               <div className="mt-6">
@@ -223,9 +353,18 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 
-                <div className="mt-6">
+                <div className="mt-8">
+                  {orderSuccess && <SuccessMessage />}
+                  {orderError && <ErrorMessage message={orderError} />}
+                  
                   <div className="flex items-start">
-                    <input type="checkbox" id="terms" className="mt-1 mr-3" />
+                    <input 
+                      type="checkbox" 
+                      id="terms" 
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-1 mr-3" 
+                    />
                     <label htmlFor="terms" className="text-sm">
                       I have read and agree to the website <span className="text-red-500 font-medium">terms and conditions</span> <span className="text-red-500">*</span>
                     </label>
@@ -235,21 +374,23 @@ export default function CheckoutPage() {
                 <div className="mt-8">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold">Grand Total:</h3>
-                    <p className="text-xl font-bold">{formatPrice(total.total)} MAD</p>
+                    <p className="text-xl font-bold">{formatPrice(orderDetails.price)} MAD</p>
                   </div>
                   
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gray-900 text-white py-3 rounded-md font-medium flex items-center justify-center"
+                    onClick={handleSubmitOrder}
+                    disabled={isSubmitting}
+                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                    className={`w-full py-3 rounded-md font-medium flex items-center justify-center ${isSubmitting ? 'bg-gray-400 text-gray-200' : 'bg-gray-900 text-white'}`}
                   >
-                    <span>PLACE ORDER</span>
+                    <span>{isSubmitting ? 'PROCESSING...' : 'PLACE ORDER'}</span>
                   </motion.button>
                 </div>
               </div>
             </div>
           </motion.div>
-        </div>
+        </form>
 
         {/* Free Quote Section */}
         <div className="relative mt-20">

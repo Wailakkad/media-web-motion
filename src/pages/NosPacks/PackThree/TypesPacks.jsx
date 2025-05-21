@@ -4,6 +4,19 @@ import { Check, Monitor, Rocket, ShoppingCart, ArrowRight } from 'lucide-react';
 export default function PricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service: 'web services',
+      package: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
       <div className="text-center mb-16">
@@ -22,7 +35,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Basic"
-          price="5 000"
+          price="5000"
           description="L'essentiel pour une présence en ligne professionnelle."
           features={[
             "Site vitrine de 1 à 3 pages",
@@ -37,6 +50,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('basic')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Basic', '5000')}
         />
 
         {/* Pack Start-up */}
@@ -45,7 +59,7 @@ export default function PricingSection() {
           iconColor="text-violet-600"
           iconBg="bg-violet-100"
           title="Pack Start-up"
-          price="8 500"
+          price="8500"
           description="Un site robuste pour lancer et développer votre activité."
           features={[
             "Site de 1 à 10 pages",
@@ -61,6 +75,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('startup')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Start-up', '8500')}
         />
 
         {/* Pack E-commerce */}
@@ -69,7 +84,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack E-commerce"
-          price="15 000"
+          price="15000"
           description="Une boutique en ligne professionnelle, évolutive et performante."
           features={[
             "Produits en illimité",
@@ -84,6 +99,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('ecommerce')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack E-commerce', '15000')}
         />
       </div>
 
@@ -108,6 +124,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -198,6 +215,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />
@@ -228,7 +246,6 @@ function Feature({ text, isHovered, delay }) {
     </li>
   );
 }
-
 
 const styleSheet = document.createElement("style");
 styleSheet.textContent = `

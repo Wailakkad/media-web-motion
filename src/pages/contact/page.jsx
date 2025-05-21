@@ -8,13 +8,25 @@ export default function ContactPage() {
     name: "",
     email: "",
     service: "",
-    subject: "",
+    sujet: "", // Changed from "subject" to match backend
     message: "",
   });
 
   const [quoteData, setQuoteData] = useState({
     name: "",
     email: "",
+  });
+
+  const [formStatus, setFormStatus] = useState({
+    loading: false,
+    success: false,
+    error: null
+  });
+
+  const [quoteStatus, setQuoteStatus] = useState({
+    loading: false,
+    success: false,
+    error: null
   });
 
   const handleChange = (e) => {
@@ -33,16 +45,108 @@ export default function ContactPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // Function to handle contact form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add your form submission logic here
+    
+    // Input validation
+    if (!formData.name || !formData.email || !formData.sujet || !formData.service || !formData.message) {
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: "Tous les champs sont requis."
+      });
+      return;
+    }
+
+    try {
+      setFormStatus({ loading: true, success: false, error: null });
+      
+      const response = await fetch('http://localhost:5000/api/v2/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Une erreur est survenue lors de l\'envoi du formulaire.');
+      }
+      
+      // Success handling
+      setFormStatus({ loading: false, success: true, error: null });
+      
+      // Reset form after successful submission
+      setFormData({
+        name: "",
+        email: "",
+        service: "",
+        sujet: "",
+        message: "",
+      });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setFormStatus(prev => ({ ...prev, success: false }));
+      }, 5000);
+      
+    } catch (error) {
+      setFormStatus({ 
+        loading: false, 
+        success: false, 
+        error: error.message 
+      });
+      console.error('Error submitting form:', error);
+    }
   };
 
-  const handleQuoteSubmit = (e) => {
+  // Function to handle quote form submission
+  // This is a placeholder for future implementation
+  const handleQuoteSubmit = async (e) => {
     e.preventDefault();
-    console.log("Quote requested:", quoteData);
-    // Add your quote form submission logic here
+    
+    // Input validation for quote form
+    if (!quoteData.name || !quoteData.email) {
+      setQuoteStatus({
+        loading: false,
+        success: false,
+        error: "All fields are required."
+      });
+      return;
+    }
+
+    try {
+      setQuoteStatus({ loading: true, success: false, error: null });
+      
+      // This is where you would send the quote data to your server
+      // For now, we'll just simulate a successful submission
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Success handling
+      setQuoteStatus({ loading: false, success: true, error: null });
+      
+      // Reset form after successful submission
+      setQuoteData({
+        name: "",
+        email: "",
+      });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setQuoteStatus(prev => ({ ...prev, success: false }));
+      }, 5000);
+      
+    } catch (error) {
+      setQuoteStatus({ 
+        loading: false, 
+        success: false, 
+        error: error.message 
+      });
+      console.error('Error submitting quote form:', error);
+    }
   };
 
   const containerVariants = {
@@ -199,16 +303,16 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="sujet" className="block text-sm font-medium text-gray-700 mb-1">
                     Sujet
                   </label>
                   <motion.input
                     whileFocus={{ scale: 1.01 }}
                     transition={{ type: "spring", stiffness: 400 }}
                     type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
+                    id="sujet"
+                    name="sujet"
+                    value={formData.sujet}
                     onChange={handleChange}
                     placeholder="Sujet de votre message"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition duration-200"
@@ -232,14 +336,34 @@ export default function ContactPage() {
                   />
                 </div>
 
+                {/* Status messages for contact form */}
+                {formStatus.error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                    {formStatus.error}
+                  </div>
+                )}
+                
+                {formStatus.success && (
+                  <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg">
+                    Votre message a été envoyé avec succès!
+                  </div>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmit}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+                  disabled={formStatus.loading}
+                  className={`w-full ${formStatus.loading ? 'bg-purple-400' : 'bg-purple-600 hover:bg-purple-700'} text-white font-medium py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center`}
                 >
-                  <span>Envoyer</span>
-                  <Send size={18} className="ml-2" />
+                  {formStatus.loading ? (
+                    <span>Envoi en cours...</span>
+                  ) : (
+                    <>
+                      <span>Envoyer</span>
+                      <Send size={18} className="ml-2" />
+                    </>
+                  )}
                 </motion.button>
               </div>
             </motion.div>
@@ -292,6 +416,20 @@ export default function ContactPage() {
                 className="w-full p-4 rounded-lg border border-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white/70 backdrop-blur-sm"
               />
             </motion.div>
+            
+            {/* Status messages for quote form */}
+            {quoteStatus.error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 max-w-3xl mx-auto">
+                {quoteStatus.error}
+              </div>
+            )}
+            
+            {quoteStatus.success && (
+              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-6 max-w-3xl mx-auto">
+                Thank you! We'll get back to you with a quote shortly.
+              </div>
+            )}
+            
             <motion.div
               variants={itemVariants}
               className="flex justify-center"
@@ -300,9 +438,10 @@ export default function ContactPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleQuoteSubmit}
-                className="bg-black text-white font-medium rounded-full py-3 px-8 transition duration-300"
+                disabled={quoteStatus.loading}
+                className={`${quoteStatus.loading ? 'bg-gray-500' : 'bg-black'} text-white font-medium rounded-full py-3 px-8 transition duration-300`}
               >
-                CHECKOUT NOW
+                {quoteStatus.loading ? "SENDING..." : "CHECKOUT NOW"}
               </motion.button>
             </motion.div>
           </div>
@@ -310,4 +449,4 @@ export default function ContactPage() {
       </div>
     </div>
   );
-}
+}2

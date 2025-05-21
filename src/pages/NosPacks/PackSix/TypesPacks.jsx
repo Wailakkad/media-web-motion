@@ -4,6 +4,19 @@ import { Check, Search, Rocket, BarChart2, ArrowRight } from 'lucide-react';
 export default function SEOPricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service: 'SEO',
+      package: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
       <div className="text-center mb-16">
@@ -22,7 +35,7 @@ export default function SEOPricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Basic"
-          price="3 000"
+          price="3000"
           description="L'essentiel pour améliorer votre présence sur les moteurs de recherche."
           features={[
             "2 mots-clés principaux ciblés",
@@ -37,6 +50,7 @@ export default function SEOPricingSection() {
           onMouseEnter={() => setHoveredCard('basic')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Basic SEO', '3000')}
         />
 
         {/* Pack Pro */}
@@ -45,7 +59,7 @@ export default function SEOPricingSection() {
           iconColor="text-violet-600"
           iconBg="bg-violet-100"
           title="Pack Pro"
-          price="4 000"
+          price="4000"
           description="Un accompagnement plus poussé pour renforcer votre visibilité."
           features={[
             "4 mots-clés principaux",
@@ -61,6 +75,7 @@ export default function SEOPricingSection() {
           onMouseEnter={() => setHoveredCard('pro')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Pro SEO', '4000')}
         />
 
         {/* Pack Premium */}
@@ -69,7 +84,7 @@ export default function SEOPricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Premium"
-          price="5 200"
+          price="5200"
           description="Une stratégie SEO complète pour performer durablement sur le web."
           features={[
             "6 mots-clés principaux",
@@ -84,6 +99,7 @@ export default function SEOPricingSection() {
           onMouseEnter={() => setHoveredCard('premium')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack Premium SEO', '5200')}
         />
       </div>
 
@@ -108,6 +124,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -198,6 +215,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />

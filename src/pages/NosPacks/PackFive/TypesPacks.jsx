@@ -3,6 +3,19 @@ import { Check, Camera, Briefcase, ShoppingCart, ArrowRight } from 'lucide-react
 
 export default function PricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
+  
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service: 'PHOTOSHOOTS',
+      package: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
@@ -22,7 +35,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Basic"
-          price="1 500"
+          price="1500"
           description="Un shooting rapide et efficace pour mettre en avant vos services ou produits."
           features={[
             "Durée du shooting : 2h",
@@ -38,6 +51,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('basic')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Basic', '1500')}
         />
 
         {/* Pack Pro */}
@@ -46,7 +60,7 @@ export default function PricingSection() {
           iconColor="text-violet-600"
           iconBg="bg-violet-100"
           title="Pack Pro"
-          price="2 500"
+          price="2500"
           description="Un shooting complet pour raconter l'histoire de votre marque."
           features={[
             "Durée : 4h",
@@ -63,6 +77,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('pro')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Pro', '2500')}
         />
 
         {/* Pack E-commerce */}
@@ -71,7 +86,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack E-commerce"
-          price="3 800"
+          price="3800"
           description="Un pack optimisé pour les boutiques en ligne et le contenu produit."
           features={[
             "Durée : 4h à 6h",
@@ -87,6 +102,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('ecommerce')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack E-commerce', '3800')}
         />
       </div>
 
@@ -111,6 +127,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -201,6 +218,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />

@@ -4,6 +4,19 @@ import { Check, Box, Rocket, ShoppingCart, ArrowRight, BarChart } from 'lucide-r
 export default function PricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service: 'COMMUNITY MANAGEMENT',
+      package: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
       <div className="text-center mb-16">
@@ -22,7 +35,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Basic"
-          price="2 000"
+          price="2000"
           description="Une présence efficace et professionnelle sur les réseaux sociaux."
           features={[
             "Gestion de Facebook + Instagram",
@@ -37,6 +50,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('basic-social')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Basic Social', '2000')}
         />
 
         {/* Pack Visibilité */}
@@ -45,7 +59,7 @@ export default function PricingSection() {
           iconColor="text-violet-600"
           iconBg="bg-violet-100"
           title="Pack Visibilité"
-          price="5 200"
+          price="5200"
           description="Renforcez votre impact et votre régularité avec un accompagnement plus poussé."
           features={[
             "Gestion de Facebook + Instagram",
@@ -61,6 +75,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('visibilite')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Visibilité', '5200')}
         />
 
         {/* Pack Performance */}
@@ -69,7 +84,7 @@ export default function PricingSection() {
           iconColor="text-gray-700"
           iconBg="bg-gray-100"
           title="Pack Performance"
-          price="11 500"
+          price="11500"
           description="Une gestion complète et stratégique pour une performance maximale."
           features={[
             "Gestion de 4 réseaux sociaux au choix",
@@ -86,6 +101,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('performance')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack Performance', '11500')}
         />
       </div>
 
@@ -110,6 +126,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -200,6 +217,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />

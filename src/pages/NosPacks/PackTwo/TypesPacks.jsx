@@ -4,6 +4,19 @@ import { Check, Box, Rocket, ShoppingCart, ArrowRight, Palette, Briefcase, Award
 export default function PricingSection() {
   const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Function to handle checkout navigation
+  const handleCheckout = (packageName, price) => {
+    // Create URL with query parameters
+    const queryParams = new URLSearchParams({
+      service_name: 'branding',
+      pack_name: packageName,
+      price: price
+    }).toString();
+    
+    // Navigate to checkout page with query parameters
+    window.location.href = `/checkout?${queryParams}`;
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
       <div className="text-center mb-16">
@@ -37,6 +50,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('basic')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.1}
+          onCheckout={() => handleCheckout('Pack Basic', '900')}
         />
 
         {/* Pack Branding */}
@@ -62,6 +76,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('branding')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.2}
+          onCheckout={() => handleCheckout('Pack Branding', '2200')}
         />
 
         {/* Pack Premium */}
@@ -88,6 +103,7 @@ export default function PricingSection() {
           onMouseEnter={() => setHoveredCard('premium')}
           onMouseLeave={() => setHoveredCard(null)}
           delay={0.3}
+          onCheckout={() => handleCheckout('Pack Premium', '3800')}
         />
       </div>
 
@@ -112,6 +128,7 @@ function PricingCard({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  onCheckout,
   delay = 0
 }) {
   // Animation values
@@ -202,6 +219,7 @@ function PricingCard({
               transition-all duration-300 ease-in-out ${buttonStyles[buttonVariant]}
               group
             `}
+            onClick={onCheckout}
           >
             <span>Commander</span>
             <ArrowRight className={`ml-2 w-5 h-5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""} group-hover:translate-x-1`} />
